@@ -11,11 +11,13 @@ library("dplyr")
 library("scales")
 
 rm(list=ls())
-starting_folder = "20181106" # 20180924
-ending_folder   = "20181115" #"20180905"
+starting_folder = "20181217" # 20181107
+ending_folder   = "20181217" #"20181122"
 monkey          = "Nor"
 setwd(paste0("/Users/kristinkaduk/Dropbox/promotion/Projects/Wagering_Monkey/results/",monkey))
 table = read.table(paste0(monkey, "M2S_psychophysicTask_since",starting_folder,"_until_",ending_folder,".txt"), sep = ",", header = TRUE)
+
+table$DifficultyLevel = abs(table$Rotation_t1 - table$Rotation_t2)
 
 ### 
 # training: 20180924 - 
@@ -31,7 +33,6 @@ Tabl_Perfor_Diff   = c();
 Tabl_Perfor_Sample = c();
 Table_Diff_Sample  = c();
 Tabl_Diff_Sample_NonMatch= c();
-table$DifficultyLevel = abs(table$Rotation_t1 - table$Rotation_t2)
 
 
 
@@ -64,7 +65,7 @@ for (i_ErrorTypes in 1: length(unique(table$abort_code))){
 ###############################################################################
 ## Performance Per Difficulty Level / Samples / Samples per Difficulty Level
 ###############################################################################
-if(Data$Task_type[1] == 9 ){ 
+#if(Data$Task_type[1] == 9  Data$Task_type[1] ==  10){ 
   perc_ResponseTime                = mean(Data$M2S_ResponseTime, na.rm = T)
   correct_ResponseTime             = mean(Data$M2S_ResponseTime[Data$completed == 1 & Data$success == 1], na.rm = T)
   error_ResponseTime              = mean(Data$M2S_ResponseTime[Data$completed == 1 & Data$success == 0], na.rm = T)  
@@ -160,7 +161,8 @@ T_Diff_Sample_NonMatch = data.frame(rep(DataDiff$Monkey[1], length(AccuracyPerSa
 Tabl_Perfor_Diff = rbind(Tabl_Perfor_Diff, T_Diff) 
 Tabl_Perfor_Sample = rbind( Tabl_Perfor_Sample, T_Sample)
 Tabl_Diff_Sample_NonMatch = rbind( Tabl_Diff_Sample_NonMatch, T_Diff_Sample_NonMatch)
-} # Task Type 
+
+#} # Task Type 
 
 Tabl_Perfor_Date = rbind( Tabl_Perfor_Date, T_Date)
 #Table_Diff_Sample = rbind(Table_Diff_Sample , T_Diff_Sample) 
@@ -412,6 +414,7 @@ dev.off()
 #############################################################
 #############################################################
 
+
 ### Motion during the complete TRIAL
 Hist_FreqMot_FixAcq_to_TarHold = ggplot(data=table) +
   geom_histogram(data = subset(table, table$completed == 1 & table$success == 0),aes(y =(..density..)/sum(..density..) ,FreqMot_FixAcq_to_TarHol ), fill = "red",  position = "identity",alpha = 0.4, lwd = 0.3)+
@@ -452,25 +455,26 @@ Hist_FreqMot_Sound_to_RewardDelivery =  ggplot(data=table) +
 ### Motion during TargetHold to End of Reward delivery ###
 ###############################################################
 Hist_TarHol_BeforeRewardDelivery =  ggplot(data=table) +
-  geom_histogram(data = subset(table, table$completed == 1 & table$success == 0),aes(y =(..density..)/sum(..density..) ,FreqMot_TarHol_BeforeRewardDelivery ),fill = "red",  position = "identity",alpha = 0.4, lwd = 0.3)+
-  geom_histogram(data = subset(table, table$completed == 1 & table$success == 1),aes(y =(..density..)/sum(..density..) ,FreqMot_TarHol_BeforeRewardDelivery), fill = "green",  position = "identity",alpha = 0.4, lwd = 0.3)+
+  geom_histogram(data = subset(table, table$completed == 1 & table$success == 0),aes(y =(..density..)/sum(..density..) ,FreqMot_TarHol_BeforeRewardDelivery ),fill = "red",  position = "identity",alpha = 0.7, lwd = 0.3)+
+  geom_histogram(data = subset(table, table$completed == 1 & table$success == 1),aes(y =(..density..)/sum(..density..) ,FreqMot_TarHol_BeforeRewardDelivery), fill = "green",  position = "identity",alpha = 0.7, lwd = 0.3)+
   ggtitle(paste0(table$Monkey[1],"     % of Motion in each trial - Period: TarHol to before RewardDelivery" ))+
   xlab("% of Motion in each trial ")+ 
   scale_y_continuous(labels= percent_format())+  scale_x_continuous(labels= percent_format())+
-  #expand_limits(x = c(0,1), y= c(0,0.5))+ 
+  expand_limits(x = c(0,1), y= c(0,1))+ 
   theme_bw()+
-  facet_grid( DifficultyLevel ~ Date) 
+  facet_grid( . ~ Date) 
 ################################################################
 ### Motion during Reward delivery ###
 ###############################################################
 Hist_RewardDelivery =  ggplot(data=table) +
-  geom_histogram(data = subset(table, table$completed == 1 & table$success == 0),aes(y =(..density..)/sum(..density..) ,Freq_RewardDelivery ),fill = "red",  position = "identity",alpha = 0.4, lwd = 0.3)+
-  geom_histogram(data = subset(table, table$completed == 1 & table$success == 1),aes(y =(..density..)/sum(..density..) ,Freq_RewardDelivery), fill = "green",  position = "identity",alpha = 0.4, lwd = 0.3)+
+  geom_histogram(data = subset(table, table$completed == 1 & table$success == 0),aes(y =(..density..)/sum(..density..) ,Freq_RewardDelivery ),fill = "red",  position = "identity",alpha = 0.7, lwd = 0.3)+
+  geom_histogram(data = subset(table, table$completed == 1 & table$success == 1),aes(y =(..density..)/sum(..density..) ,Freq_RewardDelivery), fill = "green",  position = "identity",alpha = 0.7, lwd = 0.3)+
   ggtitle(paste0(table$Monkey[1],"     % of Motion in each trial - Period: reward delivery" ))+
-  xlab("% of Motion in each trial ")+ 
+  xlab("Motion in one trial ")+ 
+  ylab("Trials")+ 
   scale_y_continuous(labels= percent_format())+  scale_x_continuous(labels= percent_format())+
-  #expand_limits(x = c(0,1), y= c(0,0.5))+ 
-  theme_bw()+
+  expand_limits(x = c(0,1), y= c(0,1))+ 
+  theme_bw() +
   facet_grid( DifficultyLevel ~ Date ) 
   
 
@@ -501,9 +505,101 @@ dev.off()
 
 ##############################################################################
 ###############################################################################
+i_Sess = 1#11
+i_Diff = 5#11
 
+  Data = c();
+  Data = table[table$Date == unique(table$Date)[i_Sess], ]
+  Data = table[table$DifficultyLevel == sort(unique(table$DifficultyLevel))[i_Diff], ]
+  
+  Hist_TarHol_BeforeRewardDelivery =  ggplot(data=Data) +
+    geom_histogram(data = subset(Data, Data$completed == 1 & Data$success == 0),aes(y =(..density..)/sum(..density..) ,FreqMot_TarHol_BeforeRewardDelivery ),fill = "red",  position = "identity",alpha = 0.7, lwd = 0.3)+
+    geom_histogram(data = subset(Data, Data$completed == 1 & Data$success == 1),aes(y =(..density..)/sum(..density..) ,FreqMot_TarHol_BeforeRewardDelivery), fill = "green",  position = "identity",alpha = 0.7, lwd = 0.3)+
+    ggtitle(paste0(Data$Monkey[1],"  ", Data$Date[1]," TarHol until before RewardDelivery" ))+
+    xlab("Motion in one trial ")+ 
+    ylab("Trials")+ 
+    scale_y_continuous(labels= percent_format())+  scale_x_continuous(labels= percent_format())+
+    expand_limits(x = c(0,1), y= c(0,1))+ 
+    theme_bw()+
+    theme(text = element_text(size = 25)) +
+    facet_grid( DifficultyLevel ~ . )     
+  
+  Hist_TarHol_BeforeRewardDelivery =  ggplot(data=table) +
+    geom_histogram(data = subset(table, table$completed == 1 & table$success == 0),aes(y =(..density..)/sum(..density..) ,FreqMot_TarHol_BeforeRewardDelivery ),fill = "red",  position = "identity",alpha = 0.7, lwd = 0.3)+
+    geom_histogram(data = subset(table, table$completed == 1 & table$success == 1),aes(y =(..density..)/sum(..density..) ,FreqMot_TarHol_BeforeRewardDelivery), fill = "green",  position = "identity",alpha = 0.7, lwd = 0.3)+
+    ggtitle(paste0(table$Monkey[1],"  "," TarHol until before RewardDelivery" ))+
+    xlab("Motion in one trial ")+ 
+    ylab("Trials")+ 
+    scale_y_continuous(labels= percent_format())+  scale_x_continuous(labels= percent_format())+
+    expand_limits(x = c(0,1), y= c(0,0))+ 
+    theme_bw()+
+    theme(text = element_text(size = 25)) +
+    facet_grid( DifficultyLevel ~ Date)     
+  
+  
+  Hist_RewardDelivery=  ggplot(data=Data) +
+    geom_histogram(data = subset(Data, Data$completed == 1 & Data$success == 0),aes(y =(..density..)/sum(..density..) ,Freq_RewardDelivery ),fill = "red",  position = "identity",alpha = 0.7, lwd = 0.3)+
+    geom_histogram(data = subset(Data, Data$completed == 1 & Data$success == 1),aes(y =(..density..)/sum(..density..) ,Freq_RewardDelivery), fill = "green",  position = "identity",alpha = 0.7, lwd = 0.3)+
+    ggtitle(paste0(Data$Monkey[1],"  Session: ", Data$Date[1] ))+
+    xlab("Motion in one trial ")+ 
+    ylab("Trials")+ 
+    scale_y_continuous(labels= percent_format())+  scale_x_continuous(labels= percent_format())+
+    expand_limits(x = c(0,1), y= c(0,1))+ 
+    theme_bw()+
+    theme(text = element_text(size = 25)) 
+  
+  
+  
+  Hist_ITI=  ggplot(data=Data) +
+    geom_histogram(data = subset(Data, Data$completed == 1 & Data$success == 0),aes(y =(..density..)/sum(..density..) ,FreqMot_ITI ),fill = "red",  position = "identity",alpha = 0.7, lwd = 0.3)+
+    geom_histogram(data = subset(Data, Data$completed == 1 & Data$success == 1),aes(y =(..density..)/sum(..density..) ,FreqMot_ITI), fill = "green",  position = "identity",alpha = 0.7, lwd = 0.3)+
+    ggtitle(paste0(Data$Monkey[1],"  Session: ", Data$Date[1] ))+
+    xlab("Motion in one trial ")+ 
+    ylab("Trials")+ 
+    scale_y_continuous(labels= percent_format())+  scale_x_continuous(labels= percent_format())+
+    expand_limits(x = c(0,1), y= c(0,1))+ 
+    theme_bw()+
+    theme(text = element_text(size = 25)) 
+  
+  
+  
+    Hist_FreqMot_Sound_to_RewardDelivery_1 =  ggplot(data=Data) +
+      geom_histogram(data = subset(Data, Data$completed == 1 & Data$success == 0),aes(y =(..density..)/sum(..density..) ,FreqMot_Sound_to_RewardDelivery ),fill = "red",  position = "identity",alpha = 0.7, lwd = 0.3)+
+      geom_histogram(data = subset(Data, Data$completed == 1 & Data$success == 1),aes(y =(..density..)/sum(..density..) ,FreqMot_Sound_to_RewardDelivery), fill = "green",  position = "identity",alpha = 0.7, lwd = 0.3)+
+      ggtitle(paste0(Data$Monkey[1],"  Session: ", Data$Date[1] ))+
+      xlab("Motion in one trial ")+ 
+      ylab("Trials")+ 
+      scale_y_continuous(labels= percent_format())+  scale_x_continuous(labels= percent_format())+
+      expand_limits(x = c(0,1), y= c(0,0.5))+ 
+      theme_bw()+
+      theme(text = element_text(size = 25)) 
+    
+    
+    
+    
+    Hist_FreqMot_TarHol_to_Sound_1 =  ggplot(data=Data) +
+      geom_histogram(data = subset(Data, Data$completed == 1 & Data$success == 0),aes(y =(..density..)/sum(..density..) ,x = FreqMot_TarHol_to_Sound ), fill = "red",  position = "identity",alpha = 0.7, lwd = 0.3)+
+      geom_histogram(data = subset(Data, Data$completed == 1 &Data$success == 1),aes(y =(..density..)/sum(..density..) ,x =FreqMot_TarHol_to_Sound), fill = "green",  position = "identity",alpha = 0.7, lwd = 0.3)+
+      ggtitle(paste0(Data$Monkey[1],"    Motion tar_hold to Feedback-Sound" ))+
+      xlab("Motion in one trial ")+ 
+      ylab("Trials in %")+ 
+      scale_y_continuous(labels= percent_format())+  scale_x_continuous(labels= percent_format())+
+      expand_limits(x = c(0,1), y= c(0,0.5))+ 
+      theme_bw()+ 
+      theme(text = element_text(size = 25)) 
+    
+    +
+      facet_grid( DifficultyLevel ~ Date )     
+    
+    
 
+setwd( paste0("/Users/kristinkaduk/Dropbox/promotion/Projects/Wagering_Monkey/results/", monkey, '/Graph_TCM1/'))
+pdf(file = paste0(monkey,"DifficutlyLevel",".ai"), width = 10, height = 15)
+par(mfrow=c(1,3), xpd=T, mar=c(5, 4, 4, 2) + 1)
+Page1= grid.arrange( Perform_DiffLevel, Perform_DiffLevel)
+Page1= grid.arrange(   Hist_ITI, Hist_ITI, Hist_ITI, Hist_ITI, Hist_ITI, Hist_ITI)
 
+dev.off() 
 
 
 
